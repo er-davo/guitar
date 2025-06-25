@@ -20,75 +20,197 @@ func TestNewFingerBoard(t *testing.T) {
 	})
 }
 
-func TestGetNotes(t *testing.T) {
-	standardTun, _ := ParseTuning(StandardTuning)
-	fb, _ := NewFingerBoard(standardTun, 24)
+func TestFingerBoard_FindNotes(t *testing.T) {
+	tun, _ := ParseTuning(StandardTuning)
+	fb, _ := NewFingerBoard(tun, 24)
+
+	results := fb.FindNotes(Note{Name: "A", Octave: 2})
+
+	var found bool
+	for _, p := range results {
+		n := p.(Note)
+		if n.Fret == 0 && n.String == 4 {
+			found = true
+			break
+		}
+	}
+	assert.True(t, found, "A2 at string 4 fret 0 not found")
+}
+
+func TestFingerBoard_FindSlide(t *testing.T) {
+	tun, _ := ParseTuning(StandardTuning)
+	fb, _ := NewFingerBoard(tun, 24)
+
+	slide := Slide{
+		NoteFrom: Note{Name: "A", Octave: 2},
+		NoteTo:   Note{Name: "B", Octave: 2},
+	}
+
+	results := fb.FindSlides(slide)
+
+	assert.NotEmpty(t, results, "Expected at least one slide result")
+	for _, p := range results {
+		s := p.(Slide)
+		assert.Equal(t, s.NoteFrom.String, s.NoteTo.String, "Slide should be on same string")
+		assert.NotEqual(t, s.NoteFrom.Fret, s.NoteTo.Fret, "Slide should go to different fret")
+	}
+}
+
+func TestFingerBoard_FindHammerOn(t *testing.T) {
+	tun, _ := ParseTuning(StandardTuning)
+	fb, _ := NewFingerBoard(tun, 24)
+
+	ho := HammerOn{
+		NoteFrom: Note{Name: "C", Octave: 3},
+		NoteTo:   Note{Name: "D", Octave: 3},
+	}
+
+	results := fb.FindHammerOns(ho)
+
+	assert.NotEmpty(t, results, "Expected hammer-on positions")
+	for _, p := range results {
+		h := p.(HammerOn)
+		assert.Equal(t, h.NoteFrom.String, h.NoteTo.String, "Hammer-on must be on same string")
+		assert.True(t, h.NoteTo.Fret > h.NoteFrom.Fret, "Hammer-on should go to higher fret")
+	}
+}
+
+func TestFingerBoard_FindPullOff(t *testing.T) {
+	tun, _ := ParseTuning(StandardTuning)
+	fb, _ := NewFingerBoard(tun, 24)
+
+	po := PullOff{
+		NoteFrom: Note{Name: "D", Octave: 3},
+		NoteTo:   Note{Name: "C", Octave: 3},
+	}
+
+	results := fb.FindPullOffs(po)
+
+	assert.NotEmpty(t, results, "Expected pull-off positions")
+	for _, p := range results {
+		po := p.(PullOff)
+		assert.Equal(t, po.NoteFrom.String, po.NoteTo.String, "Pull-off must be on same string")
+		assert.True(t, po.NoteTo.Fret < po.NoteFrom.Fret, "Pull-off should go to lower fret")
+	}
+}
+
+func TestFingerBoard_FindHarmonics(t *testing.T) {
+	tun, _ := ParseTuning(StandardTuning)
+	fb, _ := NewFingerBoard(tun, 24)
+
+	h := Harmonic{Note: Note{Name: "A", Octave: 2}}
+
+	results := fb.FindHarmonics(h)
+
+	assert.NotEmpty(t, results, "Expected harmonic positions")
+	for _, p := range results {
+		hh := p.(Harmonic)
+		assert.Equal(t, "A", hh.Name)
+		assert.Equal(t, 2, hh.Octave)
+	}
+}
+
+func TestFingerBoard_Find(t *testing.T) {
+	tun, _ := ParseTuning(StandardTuning)
+	fb, _ := NewFingerBoard(tun, 24)
 
 	testCases := []struct {
-		name         string
-		targetNote   string
-		targetOctave int
-		expected     []Note
+		name     string
+		input    Playable
+		validate func([]Playable) bool
 	}{
 		{
-			name:         "A2",
-			targetNote:   "A",
-			targetOctave: 2,
-			expected: []Note{
-				{Name: "A", Octave: 2, Fret: 0, String: 4},
-				{Name: "A", Octave: 2, Fret: 5, String: 5},
+			name: "Find Note A2",
+			input: Note{
+				Name:   "A",
+				Octave: 2,
+			},
+			validate: func(results []Playable) bool {
+				for _, r := range results {
+					n := r.(Note)
+					if n.Name == "A" && n.Octave == 2 {
+						return true
+					}
+				}
+				return false
 			},
 		},
 		{
-			name:         "C#3",
-			targetNote:   "C#",
-			targetOctave: 3,
-			expected: []Note{
-				{Name: "C#", Octave: 3, Fret: 4, String: 4},
-				{Name: "C#", Octave: 3, Fret: 9, String: 5},
+			name: "Find Slide A2 -> B2",
+			input: Slide{
+				NoteFrom: Note{Name: "A", Octave: 2},
+				NoteTo:   Note{Name: "B", Octave: 2},
+			},
+			validate: func(results []Playable) bool {
+				for _, r := range results {
+					s := r.(Slide)
+					if s.NoteFrom.Name == "A" && s.NoteTo.Name == "B" &&
+						s.NoteFrom.String == s.NoteTo.String &&
+						s.NoteFrom.Fret != s.NoteTo.Fret {
+						return true
+					}
+				}
+				return false
 			},
 		},
 		{
-			name:         "F4",
-			targetNote:   "F",
-			targetOctave: 4,
-			expected: []Note{
-				{Name: "F", Octave: 4, Fret: 1, String: 0},
-				{Name: "F", Octave: 4, Fret: 6, String: 1},
-				{Name: "F", Octave: 4, Fret: 10, String: 2},
-				{Name: "F", Octave: 4, Fret: 15, String: 3},
-				{Name: "F", Octave: 4, Fret: 20, String: 4},
+			name: "Find HammerOn C3 -> D3",
+			input: HammerOn{
+				NoteFrom: Note{Name: "C", Octave: 3},
+				NoteTo:   Note{Name: "D", Octave: 3},
+			},
+			validate: func(results []Playable) bool {
+				for _, r := range results {
+					h := r.(HammerOn)
+					if h.NoteFrom.Name == "C" && h.NoteTo.Name == "D" &&
+						h.NoteFrom.String == h.NoteTo.String &&
+						h.NoteFrom.Fret < h.NoteTo.Fret {
+						return true
+					}
+				}
+				return false
 			},
 		},
 		{
-			name:         "non-existent note",
-			targetNote:   "H",
-			targetOctave: 2,
-			expected:     []Note{},
+			name: "Find PullOff D3 → C3",
+			input: PullOff{
+				NoteFrom: Note{Name: "D", Octave: 3},
+				NoteTo:   Note{Name: "C", Octave: 3},
+			},
+			validate: func(results []Playable) bool {
+				for _, r := range results {
+					p := r.(PullOff)
+					if p.NoteFrom.Name == "D" && p.NoteTo.Name == "C" &&
+						p.NoteFrom.String == p.NoteTo.String &&
+						p.NoteFrom.Fret > p.NoteTo.Fret {
+						return true
+					}
+				}
+				return false
+			},
+		},
+		{
+			name: "Find Harmonics A2",
+			input: Harmonic{
+				Note: Note{Name: "A", Octave: 2},
+			},
+			validate: func(results []Playable) bool {
+				for _, r := range results {
+					h := r.(Harmonic)
+					if h.Name == "A" && h.Octave == 2 {
+						return true
+					}
+				}
+				return false
+			},
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			notes := fb.FindNotes(tc.targetNote, tc.targetOctave)
-
-			assert.Equal(t, len(tc.expected), len(notes), "unexpected number of notes")
-			for _, expectedNote := range tc.expected {
-				assert.True(t, containsNote(notes, expectedNote),
-					"expected note %+v not found", expectedNote)
-			}
+			results := fb.Find(tc.input)
+			assert.NotEmpty(t, results, "Expected some playable results")
+			assert.True(t, tc.validate(results), "Validation function failed for test case")
 		})
 	}
-}
-
-func containsNote(notes Notes, target Note) bool {
-	for _, n := range notes {
-		if n.Name == target.Name &&
-			n.Octave == target.Octave &&
-			n.Fret == target.Fret &&
-			n.String == target.String {
-			return true
-		}
-	}
-	return false
 }

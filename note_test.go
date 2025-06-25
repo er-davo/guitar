@@ -51,7 +51,7 @@ func TestAddFret(t *testing.T) {
 	}
 }
 
-func TestCalculateScore(t *testing.T) {
+func TestScoreTo(t *testing.T) {
 	testCases := []struct {
 		name          string
 		note          Note
@@ -68,7 +68,7 @@ func TestCalculateScore(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			actual := tc.note.calculateScore(tc.target)
+			actual := tc.note.ScoreTo(tc.target)
 			assert.Equal(t, tc.expectedScore, actual, "expected %f, found %f", tc.expectedScore, actual)
 		})
 	}

@@ -32,6 +32,10 @@ func (n Note) StringNumber() int {
 	return n.String
 }
 
+func (n Note) FretPosition() int {
+	return n.Fret
+}
+
 func (n Note) StartTime() float32 {
 	return n.Time
 }
@@ -93,12 +97,12 @@ func (n *Note) Validate() error {
 	return nil
 }
 
-func (n *Note) calculateScore(target Note) float64 {
+func (n Note) ScoreTo(to Playable) float64 {
 	// Расстояние по горизонтали (лады)
-	fretDist := math.Abs(float64(n.Fret - target.Fret))
+	fretDist := math.Abs(float64(n.Fret - to.FretPosition()))
 
 	// Расстояние по вертикали (строки)
-	stringDist := math.Abs(float64(n.String - target.String))
+	stringDist := math.Abs(float64(n.String - to.StringNumber()))
 
 	// Бонус за открытые струны
 	openString := 0.0
@@ -124,7 +128,7 @@ func (n *Notes) ClosestTo(target Note) (Note, error) {
 	minScore := math.MaxFloat64
 
 	for _, candidate := range *n {
-		currentScore := candidate.calculateScore(target)
+		currentScore := candidate.ScoreTo(target)
 
 		if currentScore < minScore {
 			minScore = currentScore

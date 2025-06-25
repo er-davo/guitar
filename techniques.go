@@ -1,89 +1,104 @@
 package guitar
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type Harmonic struct {
-	Fret int
-
-	String int
-
-	Time float32
+	Note
 }
 
+// override
 func (h Harmonic) TabSymbol() string {
 	return fmt.Sprintf("<%d>", h.Fret)
 }
 
-func (h Harmonic) StringPosition() int {
-	return h.String
-}
+// func (h Harmonic) StringNumber() int {
+// 	return h.String
+// }
 
-func (h Harmonic) StartTime() float32 {
-	return h.Time
-}
+// func (h Harmonic) FretPosition() int {
+// 	return h.Fret
+// }
+
+// func (h Harmonic) StartTime() float32 {
+// 	return h.Time
+// }
 
 type Slide struct {
-	FretStart int
-	FretEnd   int
-
-	String int
-
-	Time float32
+	NoteFrom Note
+	NoteTo   Note
 }
 
 func (s Slide) TabSymbol() string {
-	if s.FretStart == -1 {
-		return fmt.Sprintf("/%d", s.FretEnd)
+	if s.NoteFrom.Fret == -1 {
+		return fmt.Sprintf("/%d", s.NoteTo.Fret)
 	}
-	return fmt.Sprintf("%d/%d", s.FretStart, s.FretEnd)
+	return fmt.Sprintf("%d/%d", s.NoteFrom.Fret, s.NoteTo.Fret)
 }
 
 func (s Slide) StringNumber() int {
-	return s.String
+	return s.NoteFrom.String
+}
+
+func (s Slide) FretPosition() int {
+	return s.NoteFrom.Fret
 }
 
 func (s Slide) StartTime() float32 {
-	return s.Time
+	return s.NoteFrom.Time
+}
+
+func (s Slide) ScoreTo(to Playable) float64 {
+	return s.NoteTo.ScoreTo(to)
 }
 
 type HammerOn struct {
-	FretFrom int
-	FretTo   int
-
-	String int
-
-	Time float32
+	NoteFrom Note
+	NoteTo   Note
 }
 
 func (h HammerOn) TabSymbol() string {
-	return fmt.Sprintf("%dh%d", h.FretFrom, h.FretTo)
+	return fmt.Sprintf("%dh%d", h.NoteFrom.Fret, h.NoteTo.Fret)
 }
 
 func (h HammerOn) StringNumber() int {
-	return h.String
+	return h.NoteFrom.String
+}
+
+func (h HammerOn) FretPosition() int {
+	return h.NoteFrom.Fret
 }
 
 func (h HammerOn) StartTime() float32 {
-	return h.Time
+	return h.NoteFrom.Time
+}
+
+func (h HammerOn) ScoreTo(to Playable) float64 {
+	return h.NoteTo.ScoreTo(to)
 }
 
 type PullOff struct {
-	FretFrom int
-	FretTo   int
-
-	String int
-
-	Time float32
+	NoteFrom Note
+	NoteTo   Note
 }
 
 func (p PullOff) TabSymbol() string {
-	return fmt.Sprintf("%dp%d", p.FretFrom, p.FretTo)
+	return fmt.Sprintf("%dp%d", p.NoteFrom.Fret, p.NoteTo.Fret)
 }
 
 func (p PullOff) StringNumber() int {
-	return p.String
+	return p.NoteFrom.String
+}
+
+func (p PullOff) FretPosition() int {
+	return p.NoteFrom.Fret
 }
 
 func (p PullOff) StartTime() float32 {
-	return p.Time
+	return p.NoteFrom.Time
+}
+
+func (p PullOff) ScoreTo(to Playable) float64 {
+	return p.NoteTo.ScoreTo(to)
 }
