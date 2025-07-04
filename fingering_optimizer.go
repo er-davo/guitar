@@ -140,7 +140,7 @@ func (opt *fingeringOptimizer) TimeLayer(notes []Playable) (TimeLayer, error) {
 	generate(0, Fingering{})
 
 	if len(tl) == 0 {
-		bestFrmWorst := Fingering{}
+		bestFrmWorst := Fingering{Note{Time: notes[0].StartTime()}}
 		minSpan := 1000000
 
 		for _, worst := range unplayables {
