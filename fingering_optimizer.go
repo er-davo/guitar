@@ -3,6 +3,7 @@ package guitar
 import (
 	"fmt"
 	"math"
+	"slices"
 )
 
 const (
@@ -47,6 +48,25 @@ func (f *Fingering) TransitionCostTo(to Fingering) float64 {
 			totalCost += missingPenalty
 		}
 	}
+
+	return totalCost
+}
+
+func (f *Fingering) NewTransitionCostTo(to Fingering) float64 {
+	cmp := func(left, right Playable) int {
+		if left.StringNumber() < right.StringNumber() {
+			return -1
+		} else if left.StringNumber() > right.StringNumber() {
+			return 1
+		}
+		return 0
+	}
+	slices.SortStableFunc(*f, cmp)
+	slices.SortStableFunc(to, cmp)
+	// toOpen := []Playable{}
+	// toPinch := []Playable{}
+
+	totalCost := 0.0
 
 	return totalCost
 }

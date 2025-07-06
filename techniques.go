@@ -21,7 +21,7 @@ func (h Harmonic) TabSymbol() string {
 // 	return h.Fret
 // }
 
-// func (h Harmonic) StartTime() float32 {
+// func (h Harmonic) StartTime() float64 {
 // 	return h.Time
 // }
 
@@ -45,7 +45,7 @@ func (s Slide) FretPosition() int {
 	return s.NoteFrom.Fret
 }
 
-func (s Slide) StartTime() float32 {
+func (s Slide) StartTime() float64 {
 	return s.NoteFrom.Time
 }
 
@@ -70,7 +70,7 @@ func (h HammerOn) FretPosition() int {
 	return h.NoteFrom.Fret
 }
 
-func (h HammerOn) StartTime() float32 {
+func (h HammerOn) StartTime() float64 {
 	return h.NoteFrom.Time
 }
 
@@ -95,7 +95,7 @@ func (p PullOff) FretPosition() int {
 	return p.NoteFrom.Fret
 }
 
-func (p PullOff) StartTime() float32 {
+func (p PullOff) StartTime() float64 {
 	return p.NoteFrom.Time
 }
 

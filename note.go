@@ -21,7 +21,7 @@ type Note struct {
 	Fret   int
 	String int
 
-	Time float32
+	Time float64
 }
 
 func (n Note) TabSymbol() string {
@@ -36,7 +36,7 @@ func (n Note) FretPosition() int {
 	return n.Fret
 }
 
-func (n Note) StartTime() float32 {
+func (n Note) StartTime() float64 {
 	return n.Time
 }
 

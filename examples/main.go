@@ -77,13 +77,35 @@ func main() {
 	fmt.Println("=== OptimizePath: Melody ===")
 
 	sequence2 := [][]guitar.Playable{
-		{guitar.Note{Name: "E", Octave: 2, Time: 0.0}},
-		{guitar.Note{Name: "G", Octave: 3, Time: 0.5}},
-		{guitar.Note{Name: "B", Octave: 3, Time: 1.0}},
-		{guitar.Note{Name: "E", Octave: 4, Time: 1.5}},
-		{guitar.Note{Name: "B", Octave: 3, Time: 2.0}},
-		{guitar.Note{Name: "G", Octave: 3, Time: 2.5}},
-		{guitar.Note{Name: "E", Octave: 2, Time: 3.0}},
+		// {guitar.Note{Name: "E", Octave: 2, Time: 0.0}},
+		// {guitar.Note{Name: "G", Octave: 3, Time: 0.5}},
+		// {guitar.Note{Name: "B", Octave: 3, Time: 1.0}},
+		// {guitar.Note{Name: "E", Octave: 4, Time: 1.5}},
+		// {guitar.Note{Name: "B", Octave: 3, Time: 2.0}},
+		// {guitar.Note{Name: "G", Octave: 3, Time: 2.5}},
+		// {guitar.Note{Name: "E", Octave: 2, Time: 3.0}},
+		// {
+		// 	guitar.Note{Name: "F", Octave: 2, Time: 0.0},
+		// 	guitar.Note{Name: "C", Octave: 3, Time: 0.0},
+		// 	guitar.Note{Name: "F", Octave: 3, Time: 0.0},
+		// 	guitar.Note{Name: "A", Octave: 3, Time: 0.0},
+		// 	guitar.Note{Name: "C", Octave: 4, Time: 0.0},
+		// 	guitar.Note{Name: "F", Octave: 4, Time: 0.0},
+		// },
+		// {
+		// 	guitar.Note{Name: "G#", Octave: 2, Time: 1.0},
+		// 	guitar.Note{Name: "D#", Octave: 3, Time: 1.0},
+		// 	guitar.Note{Name: "G#", Octave: 3, Time: 1.0},
+		// 	guitar.Note{Name: "C", Octave: 4, Time: 1.0},
+		// 	guitar.Note{Name: "D#", Octave: 4, Time: 1.0},
+		// 	guitar.Note{Name: "G#", Octave: 4, Time: 1.0},
+		// },
+		{guitar.Note{Name: "F", Octave: 2, Time: 0.0}},
+		{guitar.Note{Name: "C", Octave: 3, Time: 0.5}},
+		{guitar.Note{Name: "F", Octave: 3, Time: 1.0}},
+		{guitar.Note{Name: "A", Octave: 3, Time: 1.5}},
+		{guitar.Note{Name: "C", Octave: 4, Time: 2.0}},
+		{guitar.Note{Name: "F", Octave: 4, Time: 2.5}},
 	}
 
 	layers2, err := opt.TimeLayers(sequence2)

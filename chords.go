@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-func ParseChord(chordTab string, time float32) []Playable {
+func ParseChord(chordTab string, time float64) []Playable {
 	notes := strings.Split(chordTab, " ")
 	chord := []Playable{}
 

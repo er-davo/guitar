@@ -6,8 +6,8 @@ import (
 )
 
 type TabWriter struct {
-	time     float32
-	timeStep float32
+	time     float64
+	timeStep float64
 
 	lines []strings.Builder
 }
@@ -17,7 +17,7 @@ type Playable interface {
 	StringNumber() int
 	FretPosition() int
 
-	StartTime() float32
+	StartTime() float64
 
 	ScoreTo(Playable) float64
 }
@@ -50,7 +50,7 @@ func (tf TabFrame) Tab(numStrings int) ([]string, error) {
 	return tabs, nil
 }
 
-func (tf TabFrame) Time() float32 {
+func (tf TabFrame) Time() float64 {
 	if len(tf) == 0 {
 		return 0
 	}
@@ -131,7 +131,7 @@ func (tb *TabWriter) addNotes(notes []string) error {
 
 type TabOption func(*TabWriter)
 
-func WithTimeStep(step float32) TabOption {
+func WithTimeStep(step float64) TabOption {
 	return func(tb *TabWriter) {
 		tb.timeStep = step
 	}
