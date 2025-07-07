@@ -93,7 +93,7 @@ func (tb *TabWriter) Write(frames ...TabFrame) error {
 
 	for _, frame := range frames {
 		frameTime := frame.Time()
-		if frameTime < tb.time {
+		if frameTime < tb.time || frameTime < tb.time-tb.timeStep {
 			return fmt.Errorf("frame time %f is earlier than current time %f", frameTime, tb.time)
 		}
 
