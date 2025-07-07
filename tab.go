@@ -2,6 +2,7 @@ package guitar
 
 import (
 	"fmt"
+	"math"
 	"strings"
 )
 
@@ -112,7 +113,8 @@ func (tb *TabWriter) Write(frames ...TabFrame) error {
 			tb.lines[i].WriteString(tabSymbols[i])
 		}
 
-		tb.time = frameTime + tb.timeStep
+		// tb.time = frameTime + tb.timeStep
+		tb.time = frameTime + (tb.timeStep - math.Mod(frameTime, tb.timeStep))
 	}
 
 	return nil
