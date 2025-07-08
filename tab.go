@@ -97,16 +97,20 @@ func (tb *TabWriter) Write(frames ...TabFrame) error {
 			return fmt.Errorf("frame time %f is earlier than current time %f", frameTime, tb.time)
 		}
 
-		if frameTime < tb.time {
-			for i := range tb.lines {
-				tb.lines[i].WriteString("-")
-			}
-		}
+		// if frameTime < tb.time {
+		// 	for i := range tb.lines {
+		// 		tb.lines[i].WriteString("-")
+		// 	}
+		// }
 
 		if frameTime > tb.time {
 			padding := int((frameTime - tb.time) / tb.timeStep)
 			for i := range tb.lines {
 				tb.lines[i].WriteString(strings.Repeat("-", padding))
+			}
+		} else if tb.lines[0].Len() == 0 {
+			for i := range tb.lines {
+				tb.lines[i].WriteString("-")
 			}
 		}
 
