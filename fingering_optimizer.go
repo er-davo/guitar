@@ -13,8 +13,6 @@ const (
 type Fingering []Playable
 
 func (f *Fingering) TransitionCostTo(to Fingering) float64 {
-	// maybe add hungarian algorithm ?
-
 	usedTo := make([]bool, len(to))
 	totalCost := 0.0
 	missingPenalty := 3.0
@@ -66,7 +64,39 @@ func (f *Fingering) NewTransitionCostTo(to Fingering) float64 {
 	// toOpen := []Playable{}
 	// toPinch := []Playable{}
 
+	usedTo := make([]bool, len(to))
 	totalCost := 0.0
+	missingPenalty := 3.0
+
+	for _, fromNote := range *f {
+		bestScore := math.MaxFloat64
+		bestIdx := -1
+
+		for j, toNote := range to {
+			if usedTo[j] {
+				continue
+			}
+			score := fromNote.ScoreTo(toNote)
+			if score < bestScore {
+				bestScore = score
+				bestIdx = j
+			}
+		}
+
+		if bestIdx >= 0 {
+			totalCost += bestScore
+			usedTo[bestIdx] = true
+		} else {
+			totalCost += missingPenalty
+		}
+	}
+
+	// штраф за toNote, которые вообще не использовались
+	for _, used := range usedTo {
+		if !used {
+			totalCost += missingPenalty
+		}
+	}
 
 	return totalCost
 }
@@ -107,10 +137,10 @@ type nodeInfo struct {
 }
 
 type fingeringOptimizer struct {
-	fb FingerBoard
+	fb *FingerBoard
 }
 
-func NewFingeringOptimizer(fb FingerBoard) fingeringOptimizer {
+func NewFingeringOptimizer(fb *FingerBoard) fingeringOptimizer {
 	return fingeringOptimizer{fb: fb}
 }
 
@@ -119,15 +149,14 @@ func (opt *fingeringOptimizer) TimeLayer(notes []Playable) (TimeLayer, error) {
 		return TimeLayer{}, fmt.Errorf("to many notes (%d) for fingerboard with %d strings", len(notes), len(opt.fb.tuning))
 	}
 
-	if err := validate(&notes); err != nil {
-		return TimeLayer{}, err
-	}
-
 	tl := TimeLayer{}
 
 	possibleNotes := make([][]Playable, len(notes))
 
 	for i, note := range notes {
+		if !note.IsValid() {
+			return nil, fmt.Errorf("invalid note: %v", note)
+		}
 		possibleNotes[i] = opt.fb.Find(note)
 	}
 
@@ -248,40 +277,4 @@ func (opt *fingeringOptimizer) OptimizePath(layers []TimeLayer) ([]TabFrame, err
 	}
 
 	return optimizedPath, nil
-}
-
-func validate(events *[]Playable) error {
-	for i := range *events {
-		switch v := (*events)[i].(type) {
-		case Note:
-			return v.Validate()
-		case Harmonic:
-			return v.Validate()
-		case Slide:
-			if err := v.NoteFrom.Validate(); err != nil {
-				return err
-			}
-			if err := v.NoteTo.Validate(); err != nil {
-				return err
-			}
-		case HammerOn:
-			if err := v.NoteFrom.Validate(); err != nil {
-				return err
-			}
-			if err := v.NoteTo.Validate(); err != nil {
-				return err
-			}
-		case PullOff:
-			if err := v.NoteFrom.Validate(); err != nil {
-				return err
-			}
-			if err := v.NoteTo.Validate(); err != nil {
-				return err
-			}
-		default:
-			return fmt.Errorf("unknown type in Playable interface %t", (*events)[i])
-		}
-	}
-
-	return nil
 }

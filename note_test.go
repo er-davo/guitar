@@ -15,22 +15,22 @@ func TestAddFret(t *testing.T) {
 	}{
 		{
 			name:     "regular increment",
-			input:    Note{Name: "F", Octave: 2, Fret: 0},
-			expected: Note{Name: "F#", Octave: 2, Fret: 1},
+			input:    Note{MidiPitch: NoteToMidi("F", 2), Fret: 0},
+			expected: Note{MidiPitch: NoteToMidi("F#", 2), Fret: 1},
 		},
 		{
 			name:     "octave change",
-			input:    Note{Name: "B", Octave: 2, Fret: 0},
-			expected: Note{Name: "C", Octave: 3, Fret: 1},
+			input:    Note{MidiPitch: NoteToMidi("B", 2), Fret: 0},
+			expected: Note{MidiPitch: NoteToMidi("C", 3), Fret: 1},
 		},
 		{
 			name:     "G# to A",
-			input:    Note{Name: "G#", Octave: 3, Fret: 11},
-			expected: Note{Name: "A", Octave: 3, Fret: 12},
+			input:    Note{MidiPitch: NoteToMidi("G#", 3), Fret: 11},
+			expected: Note{MidiPitch: NoteToMidi("A", 3), Fret: 12},
 		},
 		{
-			name:        "invalid note",
-			input:       Note{Name: "X", Octave: 1},
+			name:        "invalid pitch",
+			input:       Note{MidiPitch: 127, Fret: 0}, // выше нельзя
 			expectError: true,
 		},
 	}
@@ -46,7 +46,11 @@ func TestAddFret(t *testing.T) {
 			}
 
 			assert.NoError(t, err)
-			assert.Equal(t, tc.expected, n)
+			assert.Equal(t, tc.expected.MidiPitch, n.MidiPitch)
+			assert.Equal(t, tc.expected.Fret, n.Fret)
+
+			assert.Equal(t, tc.expected.Name(), n.Name())
+			assert.Equal(t, tc.expected.Octave(), n.Octave())
 		})
 	}
 }
@@ -76,10 +80,10 @@ func TestScoreTo(t *testing.T) {
 
 func TestClosestTo(t *testing.T) {
 	notes := Notes{
-		{Name: "E", Octave: 2, Fret: 0, String: 5},
-		{Name: "E", Octave: 2, Fret: 2, String: 2},
-		{Name: "E", Octave: 2, Fret: 6, String: 4},
-		{Name: "E", Octave: 2, Fret: 8, String: 0},
+		{MidiPitch: NoteToMidi("E", 2), Fret: 0, String: 5},
+		{MidiPitch: NoteToMidi("E", 2), Fret: 2, String: 2},
+		{MidiPitch: NoteToMidi("E", 2), Fret: 6, String: 4},
+		{MidiPitch: NoteToMidi("E", 2), Fret: 8, String: 0},
 	}
 
 	testCases := []struct {

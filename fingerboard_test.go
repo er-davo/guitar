@@ -24,7 +24,7 @@ func TestFingerBoard_FindNotes(t *testing.T) {
 	tun, _ := ParseTuning(StandardTuning)
 	fb, _ := NewFingerBoard(tun, 24)
 
-	results := fb.FindNotes(Note{Name: "A", Octave: 2})
+	results := fb.FindNotes(Note{MidiPitch: NoteToMidi("A", 2)})
 
 	var found bool
 	for _, p := range results {
@@ -42,8 +42,8 @@ func TestFingerBoard_FindSlide(t *testing.T) {
 	fb, _ := NewFingerBoard(tun, 24)
 
 	slide := Slide{
-		NoteFrom: Note{Name: "A", Octave: 2},
-		NoteTo:   Note{Name: "B", Octave: 2},
+		NoteFrom: Note{MidiPitch: NoteToMidi("A", 2)},
+		NoteTo:   Note{MidiPitch: NoteToMidi("B", 2)},
 	}
 
 	results := fb.FindSlides(slide)
@@ -61,8 +61,8 @@ func TestFingerBoard_FindHammerOn(t *testing.T) {
 	fb, _ := NewFingerBoard(tun, 24)
 
 	ho := HammerOn{
-		NoteFrom: Note{Name: "C", Octave: 3},
-		NoteTo:   Note{Name: "D", Octave: 3},
+		NoteFrom: Note{MidiPitch: NoteToMidi("C", 3)},
+		NoteTo:   Note{MidiPitch: NoteToMidi("D", 3)},
 	}
 
 	results := fb.FindHammerOns(ho)
@@ -80,8 +80,8 @@ func TestFingerBoard_FindPullOff(t *testing.T) {
 	fb, _ := NewFingerBoard(tun, 24)
 
 	po := PullOff{
-		NoteFrom: Note{Name: "D", Octave: 3},
-		NoteTo:   Note{Name: "C", Octave: 3},
+		NoteFrom: Note{MidiPitch: NoteToMidi("D", 3)},
+		NoteTo:   Note{MidiPitch: NoteToMidi("C", 3)},
 	}
 
 	results := fb.FindPullOffs(po)
@@ -98,15 +98,15 @@ func TestFingerBoard_FindHarmonics(t *testing.T) {
 	tun, _ := ParseTuning(StandardTuning)
 	fb, _ := NewFingerBoard(tun, 24)
 
-	h := Harmonic{Note: Note{Name: "A", Octave: 2}}
+	h := Harmonic{Note: Note{MidiPitch: NoteToMidi("A", 2)}}
 
 	results := fb.FindHarmonics(h)
 
 	assert.NotEmpty(t, results, "Expected harmonic positions")
 	for _, p := range results {
 		hh := p.(Harmonic)
-		assert.Equal(t, "A", hh.Name)
-		assert.Equal(t, 2, hh.Octave)
+		assert.Equal(t, "A", hh.Name())
+		assert.Equal(t, 2, hh.Octave())
 	}
 }
 
@@ -120,15 +120,12 @@ func TestFingerBoard_Find(t *testing.T) {
 		validate func([]Playable) bool
 	}{
 		{
-			name: "Find Note A2",
-			input: Note{
-				Name:   "A",
-				Octave: 2,
-			},
+			name:  "Find Note A2",
+			input: Note{MidiPitch: NoteToMidi("A", 2)},
 			validate: func(results []Playable) bool {
 				for _, r := range results {
 					n := r.(Note)
-					if n.Name == "A" && n.Octave == 2 {
+					if n.Name() == "A" && n.Octave() == 2 {
 						return true
 					}
 				}
@@ -138,13 +135,13 @@ func TestFingerBoard_Find(t *testing.T) {
 		{
 			name: "Find Slide A2 -> B2",
 			input: Slide{
-				NoteFrom: Note{Name: "A", Octave: 2},
-				NoteTo:   Note{Name: "B", Octave: 2},
+				NoteFrom: Note{MidiPitch: NoteToMidi("A", 2)},
+				NoteTo:   Note{MidiPitch: NoteToMidi("B", 2)},
 			},
 			validate: func(results []Playable) bool {
 				for _, r := range results {
 					s := r.(Slide)
-					if s.NoteFrom.Name == "A" && s.NoteTo.Name == "B" &&
+					if s.NoteFrom.Name() == "A" && s.NoteTo.Name() == "B" &&
 						s.NoteFrom.String == s.NoteTo.String &&
 						s.NoteFrom.Fret != s.NoteTo.Fret {
 						return true
@@ -156,13 +153,13 @@ func TestFingerBoard_Find(t *testing.T) {
 		{
 			name: "Find HammerOn C3 -> D3",
 			input: HammerOn{
-				NoteFrom: Note{Name: "C", Octave: 3},
-				NoteTo:   Note{Name: "D", Octave: 3},
+				NoteFrom: Note{MidiPitch: NoteToMidi("C", 3)},
+				NoteTo:   Note{MidiPitch: NoteToMidi("D", 3)},
 			},
 			validate: func(results []Playable) bool {
 				for _, r := range results {
 					h := r.(HammerOn)
-					if h.NoteFrom.Name == "C" && h.NoteTo.Name == "D" &&
+					if h.NoteFrom.Name() == "C" && h.NoteTo.Name() == "D" &&
 						h.NoteFrom.String == h.NoteTo.String &&
 						h.NoteFrom.Fret < h.NoteTo.Fret {
 						return true
@@ -174,13 +171,13 @@ func TestFingerBoard_Find(t *testing.T) {
 		{
 			name: "Find PullOff D3 → C3",
 			input: PullOff{
-				NoteFrom: Note{Name: "D", Octave: 3},
-				NoteTo:   Note{Name: "C", Octave: 3},
+				NoteFrom: Note{MidiPitch: NoteToMidi("D", 3)},
+				NoteTo:   Note{MidiPitch: NoteToMidi("C", 3)},
 			},
 			validate: func(results []Playable) bool {
 				for _, r := range results {
 					p := r.(PullOff)
-					if p.NoteFrom.Name == "D" && p.NoteTo.Name == "C" &&
+					if p.NoteFrom.Name() == "D" && p.NoteTo.Name() == "C" &&
 						p.NoteFrom.String == p.NoteTo.String &&
 						p.NoteFrom.Fret > p.NoteTo.Fret {
 						return true
@@ -192,12 +189,12 @@ func TestFingerBoard_Find(t *testing.T) {
 		{
 			name: "Find Harmonics A2",
 			input: Harmonic{
-				Note: Note{Name: "A", Octave: 2},
+				Note: Note{MidiPitch: NoteToMidi("A", 2)},
 			},
 			validate: func(results []Playable) bool {
 				for _, r := range results {
 					h := r.(Harmonic)
-					if h.Name == "A" && h.Octave == 2 {
+					if h.Name() == "A" && h.Octave() == 2 {
 						return true
 					}
 				}

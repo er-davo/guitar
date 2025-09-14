@@ -14,14 +14,77 @@ const (
 
 var notesChromo = []string{"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"}
 
+func MidiToNote(pitch int) (string, int) {
+	if pitch < 0 || pitch > 127 {
+		return "Invalid pitch", -1
+	}
+
+	note := notesChromo[pitch%12]
+	octave := pitch/12 - 1
+
+	return note, octave
+}
+
+func NoteToMidi(note string, octave int) int {
+	if err := validateNote(&note); err != nil {
+		return -1
+	}
+	for i, n := range notesChromo {
+		if n == note {
+			return (octave+1)*12 + i
+		}
+	}
+	return -1
+}
+
+func validateNote(noteName *string) error {
+	switch *noteName {
+	case "Db", "D♭":
+		*noteName = "C#"
+	case "Eb", "E♭":
+		*noteName = "D#"
+	case "Gb", "G♭":
+		*noteName = "F#"
+	case "Ab", "A♭":
+		*noteName = "G#"
+	case "Bb", "B♭":
+		*noteName = "A#"
+
+	case "D♯":
+		*noteName = "C#"
+	case "E♯":
+		*noteName = "D#"
+	case "G♯":
+		*noteName = "F#"
+	case "A♯":
+		*noteName = "G#"
+	case "B♯":
+		*noteName = "A#"
+
+	case "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B":
+		return nil
+
+	default:
+		return fmt.Errorf("invalid note name: %s", *noteName)
+	}
+	return nil
+}
+
 type Note struct {
-	Name   string
-	Octave int
+	MidiPitch int
 
 	Fret   int
 	String int
 
 	Time float64
+}
+
+func (n Note) Name() string {
+	return notesChromo[n.MidiPitch%12]
+}
+
+func (n Note) Octave() int {
+	return n.MidiPitch/12 - 1
 }
 
 func (n Note) TabSymbol() string {
@@ -40,60 +103,25 @@ func (n Note) StartTime() float64 {
 	return n.Time
 }
 
-func (n *Note) AddFret() error {
-	found := -1
-
-	for i := range len(notesChromo) {
-		if n.Name == notesChromo[i] {
-			found = i
-			break
-		}
-	}
-
-	if found == -1 {
-		return fmt.Errorf("invalid note: %s", n.Name)
-	}
-
-	n.Name = notesChromo[(found+1)%len(notesChromo)]
-
-	if found == len(notesChromo)-1 {
-		n.Octave++
-	}
-
-	n.Fret++
-	return nil
+func (n Note) IsValid() bool {
+	return n.MidiPitch >= 0 && n.MidiPitch <= 127
 }
 
-func (n *Note) Validate() error {
-	switch n.Name {
-	case "Db", "D♭":
-		n.Name = "C#"
-	case "Eb", "E♭":
-		n.Name = "D#"
-	case "Gb", "G♭":
-		n.Name = "F#"
-	case "Ab", "A♭":
-		n.Name = "G#"
-	case "Bb", "B♭":
-		n.Name = "A#"
-
-	case "D♯":
-		n.Name = "C#"
-	case "E♯":
-		n.Name = "D#"
-	case "G♯":
-		n.Name = "F#"
-	case "A♯":
-		n.Name = "G#"
-	case "B♯":
-		n.Name = "A#"
-
-	case "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B":
-		return nil
-
-	default:
-		return fmt.Errorf("invalid note name: %s", n.Name)
+func (n *Note) AddFret() error {
+	if n.MidiPitch < 0 || n.MidiPitch > 127 {
+		return fmt.Errorf("invalid pitch: %d", n.MidiPitch)
 	}
+
+	if n.Fret < 0 {
+		return fmt.Errorf("invalid fret: %d", n.Fret)
+	}
+
+	if n.MidiPitch == 127 {
+		return fmt.Errorf("cannot go above MIDI 127")
+	}
+
+	n.MidiPitch++
+	n.Fret++
 	return nil
 }
 

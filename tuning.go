@@ -16,7 +16,7 @@ type Tuning []Note
 func (t *Tuning) NoteNames() []string {
 	names := make([]string, len(*t))
 	for i := range *t {
-		names[i] = (*t)[i].Name
+		names[i] = (*t)[i].Name()
 	}
 	names[0] = strings.ToLower(names[0])
 	return names
@@ -37,15 +37,13 @@ func ParseTuning(notes string) (Tuning, error) {
 			return Tuning{}, fmt.Errorf("invalid octave at note: %s", stringNote)
 		}
 		note := Note{
-			Name:   name,
-			Octave: octave,
-			String: stringNumber,
-			Fret:   0,
+			MidiPitch: NoteToMidi(name, octave),
+			String:    stringNumber,
+			Fret:      0,
 		}
 
-		err = note.Validate()
-		if err != nil {
-			return Tuning{}, err
+		if note.MidiPitch == -1 {
+			return Tuning{}, fmt.Errorf("invalid note: %s", stringNote)
 		}
 
 		tuning[stringNumber] = note

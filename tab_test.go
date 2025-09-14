@@ -19,7 +19,7 @@ func TestTabWriter_WriteFrames(t *testing.T) {
 		{
 			name: "single note",
 			frames: []TabFrame{
-				{Note{Name: "E", Octave: 2, Fret: 12, String: 5, Time: 0}},
+				{Note{MidiPitch: NoteToMidi("E", 2), Fret: 12, String: 5, Time: 0}},
 			},
 			expectedTab: "e|--\nB|--\nG|--\nD|--\nA|--\nE|12\n",
 		},
@@ -27,12 +27,12 @@ func TestTabWriter_WriteFrames(t *testing.T) {
 			name: "chord with time step",
 			frames: []TabFrame{
 				{
-					Note{Name: "C", Fret: 3, String: 4, Time: 0},
-					Note{Name: "E", Fret: 2, String: 3, Time: 0},
-					Note{Name: "G", Fret: 0, String: 2, Time: 0},
+					Note{MidiPitch: NoteToMidi("C", 2), Fret: 3, String: 4, Time: 0},
+					Note{MidiPitch: NoteToMidi("E", 2), Fret: 2, String: 3, Time: 0},
+					Note{MidiPitch: NoteToMidi("G", 2), Fret: 0, String: 2, Time: 0},
 				},
 				{
-					Note{Name: "C", Fret: 5, String: 2, Time: 0.4},
+					Note{MidiPitch: NoteToMidi("C", 2), Fret: 5, String: 2, Time: 0.4},
 				},
 			},
 			expectedTab: "e|---\nB|---\nG|0-5\nD|2--\nA|3--\nE|---\n",
@@ -64,7 +64,7 @@ func TestTabWriter_WriteFrames(t *testing.T) {
 		{
 			name: "invalid string",
 			frames: []TabFrame{
-				{Note{Name: "A", Fret: 1, String: 8, Time: 0}},
+				{Note{MidiPitch: NoteToMidi("A", 2), Fret: 1, String: 8, Time: 0}},
 			},
 			expectError: true,
 		},

@@ -7,6 +7,7 @@ import (
 type FingerBoard struct {
 	tuning Tuning
 	frets  int
+	cache  map[int][]Playable
 }
 
 func NewFingerBoard(tun Tuning, frets int) (*FingerBoard, error) {
@@ -17,6 +18,7 @@ func NewFingerBoard(tun Tuning, frets int) (*FingerBoard, error) {
 	return &FingerBoard{
 		tuning: tun,
 		frets:  frets,
+		cache:  make(map[int][]Playable, frets*len(tun)),
 	}, nil
 }
 
@@ -42,6 +44,10 @@ func (fb *FingerBoard) Find(target Playable) []Playable {
 }
 
 func (fb *FingerBoard) FindNotes(target Note) []Playable {
+	if notes, ok := fb.cache[target.MidiPitch]; ok {
+		return notes
+	}
+
 	notes := []Playable{}
 	currentNote := Note{}
 
@@ -49,13 +55,15 @@ func (fb *FingerBoard) FindNotes(target Note) []Playable {
 		currentNote = fb.tuning[i]
 
 		for fret := 0; fret < fb.frets; fret++ {
-			if currentNote.Name == target.Name && currentNote.Octave == target.Octave {
+			if currentNote.MidiPitch == target.MidiPitch {
 				currentNote.Time = target.Time
 				notes = append(notes, currentNote)
 			}
 			currentNote.AddFret()
 		}
 	}
+
+	fb.cache[target.MidiPitch] = notes
 
 	return notes
 }

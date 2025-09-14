@@ -22,21 +22,33 @@ package main
 
 import (
 	"fmt"
+
 	"github.com/er-davo/guitar"
 )
 
 func main() {
+	// Initialize a tab writer with standard tuning
 	tuning, _ := guitar.ParseTuning(guitar.StandardTuning)
 	tab, _ := guitar.NewTabWriter(tuning.NoteNames())
 
-	// Add an A minor chord
+	// Add an A minor chord (open position)
 	_ = tab.Write(guitar.ParseChord("0 1 2 2 0 -", 0))
 
-	// Add a slide from fret 5 to 7 on the G string
+	// Add a slide from fret 5 to 7 on the G string (G3 open -> fret5 = C4, fret7 = D4)
 	_ = tab.Write(guitar.TabFrame{
 		guitar.Slide{
-			NoteFrom: guitar.Note{Fret: 5, String: 2, Time: 0.5},
-			NoteTo:   guitar.Note{Fret: 7, String: 2, Time: 0.5},
+			NoteFrom: guitar.Note{
+				MidiPitch: guitar.NoteToMidi("C", 4),
+				Fret:      5,
+				String:    3,
+				Time:      0.5,
+			},
+			NoteTo: guitar.Note{
+				MidiPitch: guitar.NoteToMidi("D", 4),
+				Fret:      7,
+				String:    3,
+				Time:      0.5,
+			},
 		},
 	})
 
@@ -56,15 +68,18 @@ E|-----
 ```go
 tuning, _ := guitar.ParseTuning(guitar.StandardTuning)
 fb, _ := guitar.NewFingerBoard(tuning, 24) // 24-fret board
-positions := fb.Find(guitar.Note{Name: "C#", Octave: 3})
-for _, p := range positions {
-	fmt.Println(p)
+target := guitar.Note{MidiPitch: guitar.NoteToMidi("C#", 3)}
+
+for _, p := range fb.Find(target) {
+	n := p.(guitar.Note)
+	name, oct := guitar.MidiToNote(n.MidiPitch)
+	fmt.Printf("String %d Fret %d (MIDI %d -> %s%d)\n", n.String, n.Fret, n.MidiPitch, name, oct)
 }
 ```
 Output
 ```
-{C# 3 4 4 0}
-{C# 3 9 5 0}
+String 4 Fret 4 (MIDI 49 -> C#3)
+String 5 Fret 9 (MIDI 49 -> C#3)
 ```
 ## 3. Parse Custom Chords
 ```go
@@ -75,18 +90,21 @@ chord := guitar.ParseChord("0 2 2 2 0 -") // A major chord
 ```go
 sequence := [][]guitar.Playable{
 	{
-		guitar.Note{Name: "C", Octave: 3, Time: 0},
-		guitar.Note{Name: "E", Octave: 3, Time: 0},
-		guitar.Note{Name: "G", Octave: 3, Time: 0},
+		guitar.Note{MidiPitch: guitar.NoteToMidi("C", 3), Time: 0},
+		guitar.Note{MidiPitch: guitar.NoteToMidi("E", 3), Time: 0},
+		guitar.Note{MidiPitch: guitar.NoteToMidi("G", 3), Time: 0},
 	},
 	{
-		guitar.Note{Name: "D", Octave: 3, Time: 0.5},
-		guitar.Note{Name: "F#", Octave: 3, Time: 0.5},
-		guitar.Note{Name: "A", Octave: 2, Time: 0.5},
+		guitar.Note{MidiPitch: guitar.NoteToMidi("D", 3), Time: 0.5},
+		guitar.Note{MidiPitch: guitar.NoteToMidi("F#", 3), Time: 0.5},
+		guitar.Note{MidiPitch: guitar.NoteToMidi("A", 2), Time: 0.5},
 		guitar.Slide{
-			NoteFrom: guitar.Note{Name: "C", Octave: 4, Time: 0.5},
-			NoteTo:   guitar.Note{Name: "C#", Octave: 4, Time: 0.5},
+			NoteFrom: guitar.Note{MidiPitch: guitar.NoteToMidi("C", 4), Time: 0.5},
+			NoteTo:   guitar.Note{MidiPitch: guitar.NoteToMidi("C#", 4), Time: 0.5},
 		},
+	},
+	{
+		guitar.Note{MidiPitch: guitar.NoteToMidi("E", 4), Time: 1.0},
 	},
 }
 
@@ -114,5 +132,4 @@ E|--5----
 
 This library is actively developed. Future updates may include:
 
-- 🎹 **MIDI Pitch Support**: Use raw MIDI pitch values alongside traditional note names and octaves.
 - 📄 **MusicXML Export**: Generate MusicXML representations of tabs for compatibility with notation software.

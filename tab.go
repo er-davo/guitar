@@ -21,6 +21,8 @@ type Playable interface {
 	StartTime() float64
 
 	ScoreTo(Playable) float64
+
+	IsValid() bool
 }
 
 type TabFrame []Playable

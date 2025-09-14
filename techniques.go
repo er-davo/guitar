@@ -25,6 +25,14 @@ func (h Harmonic) TabSymbol() string {
 // 	return h.Time
 // }
 
+// func (h Harmonic) ScoreTo(to Playable) float64 {
+// 	return h.Note.ScoreTo(to)
+// }
+
+// func (h Harmonic) IsValid() bool {
+// 	return h.MidiPitch >= 0 && h.MidiPitch <= 127
+// }
+
 type Slide struct {
 	NoteFrom Note
 	NoteTo   Note
@@ -53,6 +61,11 @@ func (s Slide) ScoreTo(to Playable) float64 {
 	return s.NoteTo.ScoreTo(to)
 }
 
+func (s Slide) IsValid() bool {
+	return (s.NoteFrom.MidiPitch >= 0 && s.NoteFrom.MidiPitch <= 127) ||
+		(s.NoteTo.MidiPitch >= 0 && s.NoteTo.MidiPitch <= 127)
+}
+
 type HammerOn struct {
 	NoteFrom Note
 	NoteTo   Note
@@ -78,6 +91,11 @@ func (h HammerOn) ScoreTo(to Playable) float64 {
 	return h.NoteTo.ScoreTo(to)
 }
 
+func (h HammerOn) IsValid() bool {
+	return (h.NoteFrom.MidiPitch >= 0 && h.NoteFrom.MidiPitch <= 127) ||
+		(h.NoteTo.MidiPitch >= 0 && h.NoteTo.MidiPitch <= 127)
+}
+
 type PullOff struct {
 	NoteFrom Note
 	NoteTo   Note
@@ -101,4 +119,9 @@ func (p PullOff) StartTime() float64 {
 
 func (p PullOff) ScoreTo(to Playable) float64 {
 	return p.NoteTo.ScoreTo(to)
+}
+
+func (p PullOff) IsValid() bool {
+	return (p.NoteFrom.MidiPitch >= 0 && p.NoteFrom.MidiPitch <= 127) ||
+		(p.NoteTo.MidiPitch >= 0 && p.NoteTo.MidiPitch <= 127)
 }
